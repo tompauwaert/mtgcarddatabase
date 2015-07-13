@@ -68,7 +68,7 @@ class MtgjsonContent(object):
         the file did not exist.\n
         """
         if os.path.isfile(self._data_location(data_id)):
-            return  open(self._data_location(self._ID_ALLSETS_X), 'r')
+            return open(self._data_location(self._ID_ALLSETS_X), 'r')
         return None
 
     def _get_data_remote(self, data_id):
@@ -151,7 +151,8 @@ class MtgjsonContent(object):
                 allsets_file.close()
 
         # read sets from json data.
-        return [set_code for set_code in allsets_json]
+        return [{"name" : allsets_json[set_code]["name"],
+                 "code" : allsets_json[set_code]["code"]} for set_code in allsets_json]
 
 
 

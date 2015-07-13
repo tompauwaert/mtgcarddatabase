@@ -2,7 +2,6 @@
 TEST DATA FOR MTG JSON TESTING.
 This hold some json_data that can be used for testing.
 """
-from pprint import pprint
 
 data = """
 {
@@ -177,6 +176,13 @@ def data_zipped(data=data):
     zip_archive.writestr(_SETS_CONTENT_NAME, data_buffer.getvalue())
     zip_archive.close()
     return zip_buffer.getvalue()
+
+def data_file(data=data):
+    output = StringIO.StringIO()
+    # after writing the data, put the reading pointer back to the beginning of the file.
+    output.write(data)
+    output.seek(0)
+    return output
 
 def faulty_zipped():
     zip_corrupted = StringIO.StringIO(data_zipped())
