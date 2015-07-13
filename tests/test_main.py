@@ -23,9 +23,6 @@ class MtgjsonContentTest(unittest.TestCase):
 
     def setUp(self):
         self.content = mtgdb.content_provider.MtgjsonContent()
-        self.mock_requests_response = mock.Mock()
-        self.mock_requests_response.content = mtgjson_data.data_zipped()
-
 
     @mock.patch('mtgdb.content_provider.MtgjsonContent._get_data_local', return_value=None)
     @mock.patch('mtgdb.content_provider.MtgjsonContent._get_data_remote')
