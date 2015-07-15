@@ -3,7 +3,7 @@ import json
 
 import mock
 import requests.exceptions
-import mtgdb.content_provider
+import mtgdb.core.content_provider
 import mtgdb.exceptions
 import tests.data.mtgjson_testdata as mtgjson_data
 
@@ -11,9 +11,9 @@ import tests.data.mtgjson_testdata as mtgjson_data
 class ContentAvailabilityTest(unittest.TestCase):
 
     def setUp(self):
-        self.availability = mtgdb.content_provider.ContentAvailability()
+        self.availability = mtgdb.core.content_provider.ContentAvailability()
 
-    @mock.patch('mtgdb.content_provider.MtgjsonContent.available_sets',
+    @mock.patch('mtgdb.core.content_provider.MtgjsonContent.available_sets',
                 return_value=mtgjson_data.data_sets())
     def test_shouldReturnListOfAllOfficialyAvailableSets(self, m_mtg):
         self.assertListEqual(self.availability.available_sets(), mtgjson_data.data_sets())
@@ -22,11 +22,11 @@ class ContentAvailabilityTest(unittest.TestCase):
 class MtgjsonContentTest(unittest.TestCase):
 
     def setUp(self):
-        self.content = mtgdb.content_provider.MtgjsonContent()
+        self.content = mtgdb.core.content_provider.MtgjsonContent()
 
-    @mock.patch('mtgdb.content_provider.MtgjsonContent._get_data_local', return_value=None)
-    @mock.patch('mtgdb.content_provider.MtgjsonContent._get_data_remote')
-    @mock.patch('mtgdb.content_provider.MtgjsonContent._save_data_local')
+    @mock.patch('mtgdb.core.content_provider.MtgjsonContent._get_data_local', return_value=None)
+    @mock.patch('mtgdb.core.content_provider.MtgjsonContent._get_data_remote')
+    @mock.patch('mtgdb.core.content_provider.MtgjsonContent._save_data_local')
     def test_shouldReturnListOfAllAvailableSetsFromInternetLast(self, m_save, m_remote,
                                                                 m_local):
         # mock returns zipped test-data json.
@@ -40,10 +40,10 @@ class MtgjsonContentTest(unittest.TestCase):
                                                 json.loads(mtgjson_data.data)))
 
 
-    @mock.patch('mtgdb.content_provider.MtgjsonContent._get_data_local',
+    @mock.patch('mtgdb.core.content_provider.MtgjsonContent._get_data_local',
                 return_value=mtgjson_data.data_file(mtgjson_data.data))
-    @mock.patch('mtgdb.content_provider.MtgjsonContent._get_data_remote')
-    @mock.patch('mtgdb.content_provider.MtgjsonContent._save_data_local')
+    @mock.patch('mtgdb.core.content_provider.MtgjsonContent._get_data_remote')
+    @mock.patch('mtgdb.core.content_provider.MtgjsonContent._save_data_local')
     def test_shouldReturnListOfAllAvailableSetsFromLocalStorageFirst(self, m_save,
                                                                      m_remote, m_local) :
         m_remote.return_value = mtgjson_data.data_file(mtgjson_data.data)
@@ -60,22 +60,22 @@ class MtgjsonContentTest(unittest.TestCase):
         self.assertFalse(m_remote.called, 'should not attempt to request from internet.')
         self.assertFalse(m_save.called, 'should not attempt to save to local storage, it already exists')
 
-    @mock.patch('mtgdb.content_provider.MtgjsonContent._get_data_local', return_value=None)
-    @mock.patch('mtgdb.content_provider.MtgjsonContent._get_data_remote')
+    @mock.patch('mtgdb.core.content_provider.MtgjsonContent._get_data_local', return_value=None)
+    @mock.patch('mtgdb.core.content_provider.MtgjsonContent._get_data_remote')
     def test_shouldReturnExceptionIfTheJsonCannotBeReadFromInternet(self, m_remote, m_local):
         m_remote.return_value = mtgjson_data.data_file(mtgjson_data.data_malformed_json)
         self.assertRaises(mtgdb.exceptions.InvalidDataError, self.content.available_sets)
 
 
-    @mock.patch('mtgdb.content_provider.MtgjsonContent._get_data_local', return_value=None)
-    @mock.patch('mtgdb.content_provider.requests.get')
+    @mock.patch('mtgdb.core.content_provider.MtgjsonContent._get_data_local', return_value=None)
+    @mock.patch('mtgdb.core.content_provider.requests.get')
     def test_shouldReturnExceptionIfTheZipCannotBeReadFromInternet(self, m_req, m_local):
         m_req.return_value = mock.MagicMock()
         m_req.return_value.content = mtgjson_data.faulty_zipped()
         self.assertRaises(mtgdb.exceptions.InvalidDataError, self.content.available_sets)
 
-    @mock.patch('mtgdb.content_provider.MtgjsonContent._get_data_local', return_value=None)
-    @mock.patch('mtgdb.content_provider.MtgjsonContent._get_data_remote',
+    @mock.patch('mtgdb.core.content_provider.MtgjsonContent._get_data_local', return_value=None)
+    @mock.patch('mtgdb.core.content_provider.MtgjsonContent._get_data_remote',
                 side_effect=requests.exceptions.ConnectionError)
     def test_shouldReturnExceptionIfCantAccessInternet(self, m_remote, m_local):
         self.assertRaises(requests.exceptions.ConnectionError, self.content.available_sets)
