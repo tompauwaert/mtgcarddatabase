@@ -15,7 +15,7 @@ class ContentAvailabilityTest(unittest.TestCase):
 
     @mock.patch('mtgdb.content_provider.MtgjsonContent.available_sets',
                 return_value=mtgjson_data.data_sets())
-    def test_shouldReturnListOfAllOfficialyAvailableSets(self):
+    def test_shouldReturnListOfAllOfficialyAvailableSets(self, m_mtg):
         self.assertListEqual(self.availability.available_sets(), mtgjson_data.data_sets())
 
 
@@ -44,8 +44,8 @@ class MtgjsonContentTest(unittest.TestCase):
                 return_value=mtgjson_data.data_file(mtgjson_data.data))
     @mock.patch('mtgdb.content_provider.MtgjsonContent._get_data_remote')
     @mock.patch('mtgdb.content_provider.MtgjsonContent._save_data_local')
-    def test_shouldReturnListOfAllAvailableSetsFromLocalStorageFirst(self, m_local,
-                                                                     m_remote, m_save) :
+    def test_shouldReturnListOfAllAvailableSetsFromLocalStorageFirst(self, m_save,
+                                                                     m_remote, m_local) :
         m_remote.return_value = mtgjson_data.data_file(mtgjson_data.data)
 
         # Fake existence of the data on local storage so that
@@ -56,7 +56,7 @@ class MtgjsonContentTest(unittest.TestCase):
         self.assertListEqual(sets, mtgjson_data.data_sets(),
                              "Test returns incorrect list of available sets.")
         # at least one call to open must have tried reading the set data locally
-        self.assertTrue(m_local.called)
+        self.assertTrue(m_local.called, 'should get the data locally first.')
         self.assertFalse(m_remote.called, 'should not attempt to request from internet.')
         self.assertFalse(m_save.called, 'should not attempt to save to local storage, it already exists')
 
@@ -80,26 +80,16 @@ class MtgjsonContentTest(unittest.TestCase):
     def test_shouldReturnExceptionIfCantAccessInternet(self, m_remote, m_local):
         self.assertRaises(requests.exceptions.ConnectionError, self.content.available_sets)
 
-def load_tests(loader, standard_tests, pattern):
-    test_cases = [
+
+def suite():
+    test_classes = [
         MtgjsonContentTest,
         ContentAvailabilityTest,
     ]
     suite = unittest.TestSuite()
-    for test_class in test_cases:
-        tests = loader.loadTestsFromTestCase(test_class)
-        suite.addTests(tests)
+    for test_class in test_classes:
+        suite.addTests(unittest.TestLoader().loadTestsFromTestCase(test_class))
     return suite
-
-# def suite():
-#     test_classes = [
-#         MtgjsonContentTest,
-#         ContentAvailabilityTest,
-#     ]
-#     suite = unittest.TestSuite()
-#     for test_class in test_classes:
-#         suite.addTests(unittest.TestLoader().loadTestsFromTestCase(test_class))
-#     return suite
 
 if __name__ == "__main__":
     unittest.main()

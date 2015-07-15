@@ -3,6 +3,7 @@ import unittest
 # Test files
 test_modules = [
     'tests.test_content',
+    'tests.test_cli',
 ]
 suite = unittest.TestSuite()
 for module in test_modules:
