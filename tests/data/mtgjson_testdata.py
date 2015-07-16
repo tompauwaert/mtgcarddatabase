@@ -162,12 +162,13 @@ data_malformed_json = """
 _SETS_ZIPPED = 'mtgjson_testdata_sets.zip'
 _SETS_CONTENT_NAME = 'Allsets-x.json.zip'
 
-import StringIO
+import StringIO, io
 import zipfile
 import json
+from mtgdb.core.data_id import SET_DATA as d_id
 
 def data_zipped(data=data):
-    zip_buffer = StringIO.StringIO()
+    zip_buffer = io.BytesIO()
     zip_archive = zipfile.ZipFile(zip_buffer, mode='w')
 
     data_buffer = StringIO.StringIO()
@@ -189,17 +190,22 @@ def faulty_zipped():
     zip_corrupted.truncate(len(zip_corrupted.getvalue())-128)
     return zip_corrupted.getvalue()
 
-def data_sets():
+def data_sets(info=[]):
     data_loaded = json.loads(data)
-    sets = [{"code": key,
-             "name": data_loaded[key].get('name')}
+    sets = [{d_id.CODE: key,
+             d_id.NAME: data_loaded[key].get('name')}
             for key in data_loaded]
+
+    if d_id.RELEASE_DATE in info:
+        for set in sets:
+            set[d_id.RELEASE_DATE] = data_loaded[set[d_id.CODE]].get('releaseDate')
 
     return sets
 
 
+from pprint import pprint
 if __name__ == "__main__":
-    faulty_zipped()
+    pprint(data_sets([d_id.RELEASE_DATE]))
 
 
 

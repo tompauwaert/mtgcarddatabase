@@ -4,6 +4,7 @@ import unittest
 test_modules = [
     'tests.test_content',
     'tests.test_cli',
+    'tests.test_data_view',
 ]
 suite = unittest.TestSuite()
 for module in test_modules:

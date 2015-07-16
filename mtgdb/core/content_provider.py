@@ -5,6 +5,7 @@ import json
 import os, os.path
 
 import mtgdb.exceptions
+from mtgdb.core.data_id import SET_DATA as d_id
 
 class ContentAvailability(object):
     """ Class that knows which content is available 'officially', and can give a differentiating
@@ -151,8 +152,8 @@ class MtgjsonContent(object):
                 allsets_file.close()
 
         # read sets from json data.
-        return [{"name" : allsets_json[set_code]["name"],
-                 "code" : allsets_json[set_code]["code"]} for set_code in allsets_json]
+        return [{d_id.NAME : allsets_json[set_code]["name"],
+                 d_id.CODE : allsets_json[set_code]["code"]} for set_code in allsets_json]
 
 
 
