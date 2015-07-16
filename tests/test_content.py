@@ -46,22 +46,29 @@ class MtgjsonContentTest(unittest.TestCase):
                         json.loads(mtgjson_data.data)),
                         "test did not try and save remote data locally")
 
-    def test_shouldReturnListOfAllAvailableSetsFromLocalStorageFirst(self) :
-        self.content._get_data_local = mock.MagicMock()
-        self.content._get_data_local.return_value = mtgjson_data.data_file(mtgjson_data.data)
+
+    @mock.patch('mtgdb.core.content_provider.os.path.isfile', return_value=True)
+    def test_shouldReturnListOfAllAvailableSetsFromLocalStorageFirst(self, m_isfile) :
+        # self.content._get_data_local = mock.MagicMock()
+        # self.content._get_data_local.return_value = mtgjson_data.data_file(mtgjson_data.data)
         self.content._get_data_remote = mock.MagicMock()
         self.content._save_data_local = mock.MagicMock()
 
+        # TODO: TESTING MY MOCKING FUNCTION
+        my_mock = my_mock_open(read_data=mtgjson_data.data)
+        my_mock.side_effect = open_side_effect
+        with mock.patch('__builtin__.open', new=my_mock) as patch:
         # Fake existence of the data on local storage so that
         # no requests to the internet are made if the file is present.
         # Mock out the open() function.
-        sets = self.content.available_sets()
+            sets = self.content.available_sets()
+            from pprint import pprint
 
         self.assertListEqual(sets, mtgjson_data.data_sets(),
                              "Test returns incorrect list of available sets.")
         # at least one call to open must have tried reading the set data locally
-        self.assertTrue(self.content._get_data_local.called,
-                        'should get the data locally first.')
+        # self.assertTrue(self.content._get_data_local.called,
+        #                 'should get the data locally first.')
         self.assertFalse(self.content._get_data_remote.called,
                          'should not attempt to request from internet.')
         self.assertFalse(self.content._save_data_local.called,
@@ -92,6 +99,28 @@ class MtgjsonContentTest(unittest.TestCase):
             get.side_effect = requests.exceptions.ConnectionError
             self.assertRaises(requests.exceptions.ConnectionError, self.content.available_sets)
 
+
+def open_side_effect(*arg, **kwargs):
+    from pprint import pprint
+    pprint(arg)
+
+    handle = mock.MagicMock()
+    handle.write.return_value = None
+    handle.__enter__.return_value = handle
+    # handle.read.return_value = read_data
+
+
+def my_mock_open(m=None, read_data=''):
+    if m is None:
+        m = mock.MagicMock(name='open')
+
+    handle = mock.MagicMock()
+    handle.write.return_value = None
+    handle.__enter__.return_value = handle
+    handle.read.return_value = read_data
+
+    m.return_value = handle
+    return m
 
 def suite():
     test_classes = [
