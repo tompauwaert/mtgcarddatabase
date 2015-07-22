@@ -13,15 +13,31 @@ class ContentAvailability(object):
     provided by the different content providers.
     """
 
+    def __init__(self):
+        self.official_content = MtgjsonContent()
+        self.content_providers = [
+                MtgjsonContent,
+        ]
+
     def available_sets(self):
         """
         Return a list of all the available official sets of mtg.
         :return: A list of all the available sets with some extra information about
             each element.
         """
-        official_content = MtgjsonContent()
-        sets = official_content.available_sets()
+        sets = self.official_content.available_sets()
         return sets
+
+    def populate(self, sets, data):
+        """
+        Add additional information to the set dictionary. The data array specifies which
+        information to add.
+        :param sets: the original dictionary that needs to be populated with extra information
+        :param data: data_id's for the type of data to add to the set dictionary
+        """
+        for content_provider_t in self.content_providers:
+            content_provider = content_provider_t()
+            content_provider.populate(sets, data)
 
 
 
@@ -154,6 +170,18 @@ class MtgjsonContent(object):
         # read sets from json data.
         return [{d_id.NAME : allsets_json[set_code]["name"],
                  d_id.CODE : allsets_json[set_code]["code"]} for set_code in allsets_json]
+
+    def populate(self, sets, data):
+        """
+        Add additional information to the set dictionary. The data array specifies which
+        information to add.
+
+        Only the data that is available here will be added to the dictionary.
+
+        :param sets: the original dictionary that needs to be populated with extra information
+        :param data: data_id's for the type of data to add to the set dictionary
+        """
+        pass
 
 
 

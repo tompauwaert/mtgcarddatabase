@@ -8,7 +8,7 @@ content.
 
 class SET_DATA(object):
 
-    # variable -> label
+    # code -> label
     CODE = 'set_code'
     GATHERER_CODE = 'set_gatherer_code'
     OLD_CODE = 'set_old_code'
@@ -23,6 +23,7 @@ class SET_DATA(object):
     BLOCK = 'set_block_name'
     NAME = 'set_name'
     CARDS = 'cards'
+    TYPE = 'type'
 
     # special -> label
     BORDER = 'set_border'

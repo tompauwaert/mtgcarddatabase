@@ -6,6 +6,7 @@ import requests.exceptions
 import mtgdb.core.content_provider
 import mtgdb.exceptions
 import tests.data.mtgjson_testdata as mtgjson_data
+import mtgdb.core.data_id as d_ids
 
 
 class ContentAvailabilityTest(unittest.TestCase):
@@ -13,10 +14,12 @@ class ContentAvailabilityTest(unittest.TestCase):
     def setUp(self):
         self.availability = mtgdb.core.content_provider.ContentAvailability()
 
-    @mock.patch('mtgdb.core.content_provider.MtgjsonContent.available_sets',
-                return_value=mtgjson_data.data_sets())
-    def test_shouldReturnListOfAllOfficialyAvailableSets(self, m_mtg):
-        self.assertListEqual(self.availability.available_sets(), mtgjson_data.data_sets())
+    # @mock.patch('mtgdb.core.content_provider.MtgjsonContent.available_sets',
+    #             return_value=mtgjson_data.data_sets())
+    def test_shouldReturnListOfAllOfficialyAvailableSets(self):
+        with mock.patch('mtgdb.core.content_provider.MtgjsonContent.available_sets') as m_mtg:
+            m_mtg.return_value = mtgjson_data.data_sets()
+            self.assertListEqual(self.availability.available_sets(), mtgjson_data.data_sets())
 
 
 class MtgjsonContentTest(unittest.TestCase):
@@ -91,6 +94,60 @@ class MtgjsonContentTest(unittest.TestCase):
         with mock.patch('mtgdb.core.content_provider.requests.get') as get:
             get.side_effect = requests.exceptions.ConnectionError
             self.assertRaises(requests.exceptions.ConnectionError, self.content.available_sets)
+
+    def test_shouldPopulateSetsWithAvailableInformation(self):
+        self.content._get_data_local = mock.MagicMock()
+        self.content._get_data_local.return_value = mtgjson_data.data_file()
+        # CASE 1
+        data_ids = [
+            d_ids.SET_DATA.RELEASE_DATE
+        ]
+        sets = self.content.available_sets()
+        self.assertDictEqual(sets, mtgjson_data.data_sets([d_ids.SET_DATA.RELEASE_DATE]),
+                             "case 1: populating set list with release dates not succesful")
+
+        # CASE 2
+        data_ids = [
+            d_ids.SET_DATA.BORDER
+        ]
+        sets = self.content.available_sets()
+        self.assertDictEqual(sets, mtgjson_data.data_sets([d_ids.SET_DATA.BORDER]),
+                             "case 2: populating set list with borders not succesful")
+
+        # CASE 3
+        data_ids = [
+            d_ids.SET_DATA.BLOCK
+        ]
+        sets = self.content.available_sets()
+        self.assertDictEqual(sets, mtgjson_data.data_sets([d_ids.SET_DATA.BLOCK]),
+                             "case 3: populating set list with block not succesful")
+
+        # CASE 4
+        data_ids = [
+            d_ids.SET_DATA.TYPE
+        ]
+        sets = self.content.available_sets()
+        self.assertDictEqual(sets, mtgjson_data.data_sets([d_ids.SET_DATA.TYPE]),
+                             "case 4: populating set list with set type not succesful")
+
+        # CASE 5
+        data_ids = [
+            d_ids.SET_DATA.BOOSTER
+        ]
+        sets = self.content.available_sets()
+        self.assertDictEqual(sets, mtgjson_data.data_sets([d_ids.SET_DATA.BOOSTER]),
+                             "case 4: populating set list with boosters not succesful")
+
+
+    def test_populateShouldIgnoreDataIdsThatAreNotAvailableByMtgjson(self):
+        self.assertTrue(False, "Not Implemented Yet")
+
+
+    def test_populatingWhenTheRequestedDataIsAlreadyAvailableDoesNothing(self):
+        self.assertTrue(False, "Not Implemented Yet")
+
+    def test_populateIsAnIdempotentMethod(self):
+        self.assertTrue(False, "Not Implemented Yet")
 
 
 def suite():

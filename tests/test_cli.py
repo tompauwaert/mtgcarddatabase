@@ -11,8 +11,8 @@ _LIST_PROMPT = "list>"
 class CmdTest(unittest.TestCase):
 
     def setUp(self):
-        self.input = mock.create_autospec(sys.stdin)
-        self.output = mock.create_autospec(sys.stdout)
+        self.input = mock.MagicMock(spec=sys.stdin)
+        self.output = mock.MagicMock(spec=sys.stdout)
 
     def _last_write(self, nr=None):
         if nr is None:

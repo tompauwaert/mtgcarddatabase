@@ -200,12 +200,29 @@ def data_sets(info=[]):
         for set in sets:
             set[d_id.RELEASE_DATE] = data_loaded[set[d_id.CODE]].get('releaseDate')
 
+    if d_id.BORDER in info:
+        for set in sets:
+            set[d_id.BORDER] = data_loaded[set[d_id.CODE]].get('border')
+
+    if d_id.BLOCK in info:
+        for set in sets:
+            set[d_id.BLOCK] = data_loaded[set[d_id.CODE]].get('block')
+
+    if d_id.TYPE in info:
+        for set in sets:
+            set[d_id.TYPE] = data_loaded[set[d_id.CODE]].get('type')
+
+    if d_id.BOOSTER in info:
+        for set in sets:
+            set[d_id.BOOSTER] = data_loaded[set[d_id.CODE]].get('booster')
+
+
     return sets
 
 
 from pprint import pprint
 if __name__ == "__main__":
-    pprint(data_sets([d_id.RELEASE_DATE]))
+    pprint(data_sets([d_id.RELEASE_DATE, d_id.BORDER]))
 
 
 

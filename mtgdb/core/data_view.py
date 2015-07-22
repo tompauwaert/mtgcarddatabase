@@ -16,5 +16,6 @@ class DataView(object):
             SET_DATA.CODE, and SET_DATA.NAME are included in the information by default.
         """
         sets = self.availability.available_sets()
+        self.availability.populate(sets, data)
 
         return sets
