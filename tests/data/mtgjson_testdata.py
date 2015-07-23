@@ -216,6 +216,9 @@ def data_sets(info=[]):
         for set in sets:
             set[d_id.BOOSTER] = data_loaded[set[d_id.CODE]].get('booster')
 
+    if d_id.GATHERER_CODE in info:
+        for set in sets:
+            set[d_id.GATHERER_CODE] = data_loaded[set[d_id.CODE]].get('gathererCode')
 
     return sets
 

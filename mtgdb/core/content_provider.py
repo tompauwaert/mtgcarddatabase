@@ -129,6 +129,52 @@ class MtgjsonContent(object):
         with open(self._data_location(data_id), 'w') as output_json:
             json.dump(data, output_json, indent=4)
 
+    def _get_data(self, data_id, get_remote=False):
+        """
+        Get the data with given data_id. This data might be opened from local
+        stores or from the internet.
+        :param data_id: identifier for the data, determines the data that is requested.
+        :param get_remote: specifies whether the data may be retrieved remotely if it
+        is not available locally. Preference will always be given to the locally cached data
+        if available. If the data is not available locally and get_remote is false, a
+        DataUnavailable exception will be raised.
+        :return: json object containing the data.
+        :raises DataUnavailable: raised when the data is not locally available but the
+        get_remote flag is set to false
+        """
+        allsets_file = self._get_data_local(data_id)
+
+        # If the data is not to be retrieved locally, we take this as a hint that
+        # the current local data should be overwritten with the new data.
+        if allsets_file is not None:
+            allsets_available_locally = True
+        elif not get_remote:
+            raise mtgdb.exceptions.DataUnavailable(
+                "Requested data [{}] unavailable locally. ".format(data_id) +
+                "Need permission to fetch remotely")
+        else:
+            allsets_file = self._get_data_remote(data_id)
+            allsets_available_locally = False
+
+        try:
+            allsets_json = json.load(allsets_file)
+            # Save locally for future reference if it wasn't local yet.
+            if not allsets_available_locally:
+                self._save_data_local(data_id, allsets_json)
+
+        except ValueError as vex:
+            # json could not be processed
+            import sys
+            raise mtgdb.exceptions.InvalidDataError, \
+                mtgdb.exceptions.InvalidDataError("Invalid data for json: " + vex.args[0]), \
+                sys.exc_info()[2]
+
+        finally:
+            if allsets_file is not None:
+                allsets_file.close()
+
+        return allsets_json
+
 
     def available_sets(self):
         """
@@ -143,29 +189,7 @@ class MtgjsonContent(object):
             data from a remote location, but the fetching of the data failed due to a network
             error.\n
         """
-        allsets_file = self._get_data_local(self._ID_ALLSETS_X)
-        if allsets_file is not None:
-            allsets_available_locally = True
-        else:
-            allsets_file = self._get_data_remote(self._ID_ALLSETS_X)
-            allsets_available_locally = False
-
-        try:
-            allsets_json = json.load(allsets_file)
-            # Save locally for future reference if it wasn't local yet.
-            if not allsets_available_locally:
-                self._save_data_local(self._ID_ALLSETS_X, allsets_json)
-
-        except ValueError as vex:
-            # json could not be processed
-            import sys
-            raise mtgdb.exceptions.InvalidDataError, \
-                mtgdb.exceptions.InvalidDataError("Invalid data for json: " + vex.args[0]), \
-                sys.exc_info()[2]
-
-        finally:
-            if allsets_file is not None:
-                allsets_file.close()
+        allsets_json = self._get_data(self._ID_ALLSETS_X)
 
         # read sets from json data.
         return [{d_id.NAME : allsets_json[set_code]["name"],
@@ -182,7 +206,6 @@ class MtgjsonContent(object):
         :param data: data_id's for the type of data to add to the set dictionary
         """
         pass
-
 
 
 

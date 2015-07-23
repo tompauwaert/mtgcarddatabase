@@ -6,3 +6,9 @@ class InvalidDataError(Exception):
     """
     pass
 
+
+class DataUnavailable(Exception):
+    """
+    Exception to be used when the requested data is unavailabe.
+    """
+    pass
