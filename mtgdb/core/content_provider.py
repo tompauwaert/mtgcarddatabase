@@ -49,6 +49,33 @@ class MtgjsonContent(object):
 
     _ID_ALLSETS_X = 1
 
+    _data_id = {
+        # codes
+        d_id.CODE: 'code',
+        d_id.GATHERER_CODE: 'gathererCode',
+        d_id.OLD_CODE: 'oldCode',
+        d_id.MCI_CODE: 'magicCardsInfoCode',
+
+        # release info
+        d_id.RELEASE_DATE: 'releaseDate',
+        d_id.LANGUAGES: 'languagesPrinted',
+        d_id.ONLINE_ONLY: 'onlineOnly',
+
+        # general info
+        d_id.BLOCK: 'block',
+        d_id.NAME: 'name',
+        d_id.CARDS: 'cards',
+        d_id.TYPE: 'type',
+
+        # special
+        d_id.BORDER: 'border',
+        d_id.BOOSTER: 'booster',
+    }
+
+    def __init__(self):
+        self._data = {}
+
+
     def _url_location(self, data_id):
         """
         Returns a URL location depending on the data the user wishes to access\n
@@ -142,6 +169,9 @@ class MtgjsonContent(object):
         :raises DataUnavailable: raised when the data is not locally available but the
         get_remote flag is set to false
         """
+        if self._data.get(data_id, None) is not None:
+            return self._data[data_id]
+
         allsets_file = self._get_data_local(data_id)
 
         # If the data is not to be retrieved locally, we take this as a hint that
@@ -150,17 +180,25 @@ class MtgjsonContent(object):
             allsets_available_locally = True
         elif not get_remote:
             raise mtgdb.exceptions.DataUnavailable(
-                "Requested data [{}] unavailable locally. ".format(data_id) +
+                "Requested data [{}] unavailable locally. ".format(self._data_location(data_id)) +
                 "Need permission to fetch remotely")
         else:
-            allsets_file = self._get_data_remote(data_id)
-            allsets_available_locally = False
+            try:
+                allsets_file = self._get_data_remote(data_id)
+                allsets_available_locally = False
+
+            except requests.exceptions.ConnectionError as cerr:
+                import sys
+                raise mtgdb.exceptions.DataUnavailable, \
+                    mtgdb.exceptions.DataUnavailable("[ConnectionError]" +
+                                                     "Could not retrieve remote resource."), \
+                    sys.exc_info()[2]
 
         try:
-            allsets_json = json.load(allsets_file)
+            self._data[data_id] = json.load(allsets_file)
             # Save locally for future reference if it wasn't local yet.
             if not allsets_available_locally:
-                self._save_data_local(data_id, allsets_json)
+                self._save_data_local(data_id, self._data[data_id])
 
         except ValueError as vex:
             # json could not be processed
@@ -169,74 +207,101 @@ class MtgjsonContent(object):
                 mtgdb.exceptions.InvalidDataError("Invalid data for json: " + vex.args[0]), \
                 sys.exc_info()[2]
 
+
         finally:
             if allsets_file is not None:
                 allsets_file.close()
 
-        return allsets_json
+        return self._data[data_id]
 
 
-    def available_sets(self):
+    def available_sets(self, remote=False):
         """
         Returns a list of all the sets that are available on mtgjson. If the data is not
         locally available it may be retrieved from a remote provider and cached locally for
         future reference.\n
+        :param get_remote: specifies whether the data may be retrieved remotely if it
+        is not available locally. Preference will always be given to the locally cached data
+        if available. If the data is not available locally and remote is false, a
+        DataUnavailable exception will be raised.
         :return: a list of all the sets that are available on mtgjson.\n
         :raises:\n
             \t-mtgdb.exceptions.InvalidDataError: thrown if the data was could not be accessed
             because it was either corrupt.\n
-            \t-requests.exceptions.ConnectionError: thrown if an attempt was made to retrieve the
-            data from a remote location, but the fetching of the data failed due to a network
-            error.\n
+            \tmtgdb.exceptions.DataUnavailable: raised when the data was not available. This could
+            be not available locally with remote flag=False or remote flag=True but not being able
+            to connect to the remote resource.
         """
-        allsets_json = self._get_data(self._ID_ALLSETS_X)
+        allsets_json = self._get_data(self._ID_ALLSETS_X, remote)
 
         # read sets from json data.
         return [{d_id.NAME : allsets_json[set_code]["name"],
                  d_id.CODE : allsets_json[set_code]["code"]} for set_code in allsets_json]
 
-    def populate(self, sets, data):
+    def populate(self, sets, data_ids, remote=False):
         """
         Add additional information to the set dictionary. The data array specifies which
         information to add.
 
         Only the data that is available here will be added to the dictionary.
 
-        :param sets: the original dictionary that needs to be populated with extra information
-        :param data: data_id's for the type of data to add to the set dictionary
+        :param sets: the original list of set dictionaries that needs to be populated
+        with extra information
+        :param data_ids: data_id's for the type of data to add to the set dictionary
+        :param get_remote: specifies whether the data may be retrieved remotely if it
+        is not available locally. Preference will always be given to the locally cached data
+        if available. If the data is not available locally and remote is false, a
+        DataUnavailable exception will be raised.
+        :raises:\n
+            \t-mtgdb.exceptions.InvalidDataError: thrown if the data was could not be accessed
+            because it was either corrupt.\n
+            \tmtgdb.exceptions.DataUnavailable: raised when the data was not available. This could
+            be not available locally with remote flag=False or remote flag=True but not being able
+            to connect to the remote resource.
         """
-        pass
+        allsets_json = self._get_data(self._ID_ALLSETS_X, remote)
 
+        if not data_ids:
+            # No data needs to be added.
+            return sets
 
+        for set in sets:
+            code = set[d_id.CODE]
 
+            # Populate code information
+            if d_id.GATHERER_CODE in data_ids and set.get(d_id.GATHERER_CODE) is None:
+                # If GATHERER_CODE is not set, the code is identical to CODE
+                if allsets_json[code].get(self._data_id[d_id.GATHERER_CODE]) is not None:
+                    set[d_id.GATHERER_CODE] = allsets_json[code][self._data_id[d_id.GATHERER_CODE]]
+                else:
+                    set[d_id.GATHERER_CODE] = set[d_id.CODE]
 
+            if d_id.OLD_CODE in data_ids and set.get(d_id.OLD_CODE) is None:
+                # Only set if OLD_CODE != GATHERER_CODE OR OLD_CODE != CODE
+                if allsets_json[code].get(self._data_id[d_id.OLD_CODE]) is not None:
+                    set[d_id.OLD_CODE] = allsets_json[code][self._data_id[d_id.OLD_CODE]]
+                else:
+                    set[d_id.OLD_CODE] = set[d_id.CODE]
 
+            if d_id.MCI_CODE in data_ids and set.get(d_id.MCI_CODE) is None:
+                # Only set if magicCards.info has this set.
+                if allsets_json[code].get(self._data_id[d_id.MCI_CODE]) is not None:
+                    set[d_id.MCI_CODE] = allsets_json[code][self._data_id[d_id.MCI_CODE]]
 
+            # Set onlineOnly attribute
+            if d_id.ONLINE_ONLY in data_ids and set.get(d_id.ONLINE_ONLY) is None:
+                # If it's not set, ONLINE_ONLY = False
+                if allsets_json[code].get(self._data_id[d_id.ONLINE_ONLY]) is not None:
+                    set[d_id.ONLINE_ONLY] = allsets_json[code][self._data_id[d_id.ONLINE_ONLY]]
+                else:
+                    set[d_id.ONLINE_ONLY] = False
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            # Copy over values of all the other attributes
+            for id in data_ids:
+                # skip data_ids not supported by mtgjson content provider
+                if self._data_id.get(id) is None:
+                    continue
+                # skip data_ids that have already been set
+                if set.get(id) is None and allsets_json[code].get(self._data_id[id]) is not None:
+                    set[id] = allsets_json[code][self._data_id[id]]
 
