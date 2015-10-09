@@ -5,16 +5,18 @@ class DataView(object):
     def __init__(self):
         self.availability = content_provider.ContentAvailability()
 
-    def available_sets(self, data=[]):
+    def available_sets(self, data=None):
         """
         Returns available sets with all the available, requested data.
-
 
         :param data: data_id.SET_DATA identifiers for any additional information
             wanted about sets.
         :return: returns all the available information requested, for all the official sets.
             SET_DATA.CODE, and SET_DATA.NAME are included in the information by default.
         """
+        if data is None:
+            data = []
+
         sets = self.availability.available_sets()
         self.availability.populate(sets, data)
 

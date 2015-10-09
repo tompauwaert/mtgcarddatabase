@@ -5,7 +5,8 @@ import json
 import os, os.path
 
 import mtgdb.exceptions
-from mtgdb.core.data_id import SET_DATA as d_id
+from mtgdb.core.data_id import SET_DATA as SDID
+
 
 class ContentAvailability(object):
     """ Class that knows which content is available 'officially', and can give a differentiating
@@ -16,7 +17,7 @@ class ContentAvailability(object):
     def __init__(self):
         self.official_content = MtgjsonContent()
         self.content_providers = [
-                MtgjsonContent,
+            MtgjsonContent,
         ]
 
     def available_sets(self):
@@ -40,7 +41,6 @@ class ContentAvailability(object):
             content_provider.populate(sets, data)
 
 
-
 class MtgjsonContent(object):
     """
     Access the content available on http://mtgjson.com. This website publishes available
@@ -51,30 +51,29 @@ class MtgjsonContent(object):
 
     _data_id = {
         # codes
-        d_id.CODE: 'code',
-        d_id.GATHERER_CODE: 'gathererCode',
-        d_id.OLD_CODE: 'oldCode',
-        d_id.MCI_CODE: 'magicCardsInfoCode',
+        SDID.CODE: 'code',
+        SDID.GATHERER_CODE: 'gathererCode',
+        SDID.OLD_CODE: 'oldCode',
+        SDID.MCI_CODE: 'magicCardsInfoCode',
 
         # release info
-        d_id.RELEASE_DATE: 'releaseDate',
-        d_id.LANGUAGES: 'languagesPrinted',
-        d_id.ONLINE_ONLY: 'onlineOnly',
+        SDID.RELEASE_DATE: 'releaseDate',
+        SDID.LANGUAGES: 'languagesPrinted',
+        SDID.ONLINE_ONLY: 'onlineOnly',
 
         # general info
-        d_id.BLOCK: 'block',
-        d_id.NAME: 'name',
-        d_id.CARDS: 'cards',
-        d_id.TYPE: 'type',
+        SDID.BLOCK: 'block',
+        SDID.NAME: 'name',
+        SDID.CARDS: 'cards',
+        SDID.TYPE: 'type',
 
         # special
-        d_id.BORDER: 'border',
-        d_id.BOOSTER: 'booster',
+        SDID.BORDER: 'border',
+        SDID.BOOSTER: 'booster',
     }
 
     def __init__(self):
         self._data = {}
-
 
     def _url_location(self, data_id):
         """
@@ -86,7 +85,7 @@ class MtgjsonContent(object):
         _URL_ALLSETS_ZIP = "json/AllSets-x.json.zip"
 
         selector = {
-            self._ID_ALLSETS_X : _URL_BASE + _URL_ALLSETS_ZIP
+            self._ID_ALLSETS_X: _URL_BASE + _URL_ALLSETS_ZIP
         }
         return selector.get(data_id)
 
@@ -100,7 +99,7 @@ class MtgjsonContent(object):
         _DATA_ALLSETS = "allsets.json"
 
         selector = {
-            self._ID_ALLSETS_X : _DATA_BASE + os.sep + _DATA_ALLSETS
+            self._ID_ALLSETS_X: _DATA_BASE + os.sep + _DATA_ALLSETS
         }
         return selector.get(data_id)
 
@@ -137,12 +136,14 @@ class MtgjsonContent(object):
 
         except zipfile.BadZipfile as zipex:
             import sys
+
             raise mtgdb.exceptions.InvalidDataError, \
                 mtgdb.exceptions.InvalidDataError("Invalid zip file: " + zipex.args[0]), \
                 sys.exc_info()[2]
 
         except requests.exceptions.ConnectionError as cerr:
             import sys
+
             raise requests.exceptions.ConnectionError, \
                 requests.exceptions.ConnectionError("Error downloading file: " + cerr.message), \
                 sys.exc_info()[2]
@@ -187,7 +188,7 @@ class MtgjsonContent(object):
                 allsets_file = self._get_data_remote(data_id)
                 allsets_available_locally = False
 
-            except requests.exceptions.ConnectionError as cerr:
+            except requests.exceptions.ConnectionError:
                 import sys
                 raise mtgdb.exceptions.DataUnavailable, \
                     mtgdb.exceptions.DataUnavailable("[ConnectionError]" +
@@ -203,10 +204,10 @@ class MtgjsonContent(object):
         except ValueError as vex:
             # json could not be processed
             import sys
+
             raise mtgdb.exceptions.InvalidDataError, \
                 mtgdb.exceptions.InvalidDataError("Invalid data for json: " + vex.args[0]), \
                 sys.exc_info()[2]
-
 
         finally:
             if allsets_file is not None:
@@ -214,13 +215,12 @@ class MtgjsonContent(object):
 
         return self._data[data_id]
 
-
     def available_sets(self, remote=False):
         """
         Returns a list of all the sets that are available on mtgjson. If the data is not
         locally available it may be retrieved from a remote provider and cached locally for
         future reference.\n
-        :param get_remote: specifies whether the data may be retrieved remotely if it
+        :param remote: specifies whether the data may be retrieved remotely if it
         is not available locally. Preference will always be given to the locally cached data
         if available. If the data is not available locally and remote is false, a
         DataUnavailable exception will be raised.
@@ -235,8 +235,8 @@ class MtgjsonContent(object):
         allsets_json = self._get_data(self._ID_ALLSETS_X, remote)
 
         # read sets from json data.
-        return [{d_id.NAME : allsets_json[set_code]["name"],
-                 d_id.CODE : allsets_json[set_code]["code"]} for set_code in allsets_json]
+        return [{SDID.NAME: allsets_json[set_code]["name"],
+                 SDID.CODE: allsets_json[set_code]["code"]} for set_code in allsets_json]
 
     def populate(self, sets, data_ids, remote=False):
         """
@@ -248,7 +248,7 @@ class MtgjsonContent(object):
         :param sets: the original list of set dictionaries that needs to be populated
         with extra information
         :param data_ids: data_id's for the type of data to add to the set dictionary
-        :param get_remote: specifies whether the data may be retrieved remotely if it
+        :param remote: specifies whether the data may be retrieved remotely if it
         is not available locally. Preference will always be given to the locally cached data
         if available. If the data is not available locally and remote is false, a
         DataUnavailable exception will be raised.
@@ -266,42 +266,41 @@ class MtgjsonContent(object):
             return sets
 
         for set in sets:
-            code = set[d_id.CODE]
+            code = set[SDID.CODE]
 
             # Populate code information
-            if d_id.GATHERER_CODE in data_ids and set.get(d_id.GATHERER_CODE) is None:
+            if SDID.GATHERER_CODE in data_ids and set.get(SDID.GATHERER_CODE) is None:
                 # If GATHERER_CODE is not set, the code is identical to CODE
-                if allsets_json[code].get(self._data_id[d_id.GATHERER_CODE]) is not None:
-                    set[d_id.GATHERER_CODE] = allsets_json[code][self._data_id[d_id.GATHERER_CODE]]
+                if allsets_json[code].get(self._data_id[SDID.GATHERER_CODE]) is not None:
+                    set[SDID.GATHERER_CODE] = allsets_json[code][self._data_id[SDID.GATHERER_CODE]]
                 else:
-                    set[d_id.GATHERER_CODE] = set[d_id.CODE]
+                    set[SDID.GATHERER_CODE] = set[SDID.CODE]
 
-            if d_id.OLD_CODE in data_ids and set.get(d_id.OLD_CODE) is None:
+            if SDID.OLD_CODE in data_ids and set.get(SDID.OLD_CODE) is None:
                 # Only set if OLD_CODE != GATHERER_CODE OR OLD_CODE != CODE
-                if allsets_json[code].get(self._data_id[d_id.OLD_CODE]) is not None:
-                    set[d_id.OLD_CODE] = allsets_json[code][self._data_id[d_id.OLD_CODE]]
+                if allsets_json[code].get(self._data_id[SDID.OLD_CODE]) is not None:
+                    set[SDID.OLD_CODE] = allsets_json[code][self._data_id[SDID.OLD_CODE]]
                 else:
-                    set[d_id.OLD_CODE] = set[d_id.CODE]
+                    set[SDID.OLD_CODE] = set[SDID.CODE]
 
-            if d_id.MCI_CODE in data_ids and set.get(d_id.MCI_CODE) is None:
+            if SDID.MCI_CODE in data_ids and set.get(SDID.MCI_CODE) is None:
                 # Only set if magicCards.info has this set.
-                if allsets_json[code].get(self._data_id[d_id.MCI_CODE]) is not None:
-                    set[d_id.MCI_CODE] = allsets_json[code][self._data_id[d_id.MCI_CODE]]
+                if allsets_json[code].get(self._data_id[SDID.MCI_CODE]) is not None:
+                    set[SDID.MCI_CODE] = allsets_json[code][self._data_id[SDID.MCI_CODE]]
 
             # Set onlineOnly attribute
-            if d_id.ONLINE_ONLY in data_ids and set.get(d_id.ONLINE_ONLY) is None:
+            if SDID.ONLINE_ONLY in data_ids and set.get(SDID.ONLINE_ONLY) is None:
                 # If it's not set, ONLINE_ONLY = False
-                if allsets_json[code].get(self._data_id[d_id.ONLINE_ONLY]) is not None:
-                    set[d_id.ONLINE_ONLY] = allsets_json[code][self._data_id[d_id.ONLINE_ONLY]]
+                if allsets_json[code].get(self._data_id[SDID.ONLINE_ONLY]) is not None:
+                    set[SDID.ONLINE_ONLY] = allsets_json[code][self._data_id[SDID.ONLINE_ONLY]]
                 else:
-                    set[d_id.ONLINE_ONLY] = False
+                    set[SDID.ONLINE_ONLY] = False
 
             # Copy over values of all the other attributes
-            for id in data_ids:
+            for data_id in data_ids:
                 # skip data_ids not supported by mtgjson content provider
-                if self._data_id.get(id) is None:
+                if self._data_id.get(data_id) is None:
                     continue
                 # skip data_ids that have already been set
-                if set.get(id) is None and allsets_json[code].get(self._data_id[id]) is not None:
-                    set[id] = allsets_json[code][self._data_id[id]]
-
+                if set.get(data_id) is None and allsets_json[code].get(self._data_id[data_id]) is not None:
+                    set[data_id] = allsets_json[code][self._data_id[data_id]]

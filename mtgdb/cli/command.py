@@ -17,7 +17,7 @@ class ListCmd(cmd2.Cmd):
     _PROMPT = "list>"
 
     def __init__(self, input=sys.stdin, output=sys.stdout):
-        Application.__init__(input, output)
+        cmd2.Cmd.__init__(input, output)
         self.prompt = self._PROMPT
 
 

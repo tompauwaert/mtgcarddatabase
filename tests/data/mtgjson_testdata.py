@@ -333,7 +333,10 @@ def faulty_zipped():
     zip_corrupted.truncate(len(zip_corrupted.getvalue())-128)
     return zip_corrupted.getvalue()
 
-def data_sets(data=data, info=[]):
+def data_sets(data=data, info=None):
+    if info is None:
+        info = []
+
     data_loaded = json.loads(data)
     sets = [{d_id.CODE: key,
              d_id.NAME: data_loaded[key].get('name')}
