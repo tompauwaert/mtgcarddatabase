@@ -148,14 +148,14 @@ class MtgjsonContent(object):
                 requests.exceptions.ConnectionError("Error downloading file: " + cerr.message), \
                 sys.exc_info()[2]
 
-    def _save_data_local(self, data_id, data):
+    def _save_data_local(self, data_id):
         """
         Save the data locally for future reference.\n
         :param data_id: identifier for the data, determines how the data will be saved.\n
-        :param data: the data to be stored. \n
+        The data will be fetched from the internal memory of the class.\n
         """
         with open(self._data_location(data_id), 'w') as output_json:
-            json.dump(data, output_json, indent=4)
+            json.dump(self._data[data_id], output_json, indent=4)
 
     def _get_data(self, data_id, get_remote=False):
         """
@@ -175,8 +175,6 @@ class MtgjsonContent(object):
 
         allsets_file = self._get_data_local(data_id)
 
-        # If the data is not to be retrieved locally, we take this as a hint that
-        # the current local data should be overwritten with the new data.
         if allsets_file is not None:
             allsets_available_locally = True
         elif not get_remote:
@@ -199,7 +197,7 @@ class MtgjsonContent(object):
             self._data[data_id] = json.load(allsets_file)
             # Save locally for future reference if it wasn't local yet.
             if not allsets_available_locally:
-                self._save_data_local(data_id, self._data[data_id])
+                self._save_data_local(data_id)
 
         except ValueError as vex:
             # json could not be processed
