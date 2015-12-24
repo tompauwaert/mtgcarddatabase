@@ -338,30 +338,6 @@ class MtgjsonContentTest(unittest.TestCase):
     def test_TEST_GET_DATA_METHOD(self):
         self.assertTrue(False, "Not Implemented")
 
-
-
-def open_side_effect(*arg, **kwargs):
-    from pprint import pprint
-    pprint(arg)
-
-    handle = mock.MagicMock()
-    handle.write.return_value = None
-    handle.__enter__.return_value = handle
-    # handle.read.return_value = read_data
-
-
-def my_mock_open(m=None, read_data=''):
-    if m is None:
-        m = mock.MagicMock(name='open')
-
-    handle = mock.MagicMock()
-    handle.write.return_value = None
-    handle.__enter__.return_value = handle
-    handle.read.return_value = read_data
-
-    m.return_value = handle
-    return m
-
 def suite():
     test_classes = [
         MtgjsonContentTest,
