@@ -327,25 +327,6 @@ class MtgjsonContentTest(unittest.TestCase):
                                  "case 3: populate is not idempotent when introducing " +
                                  "non-existant d_id")
 
-    def test_translateValidLabels(self):
-        """
-        Translation of valid labels with valid data_ids
-        :return:
-        """
-        allsets_id = self.content._ID_ALLSETS_X
-
-    def test_translateInvalidDataId(self):
-        """
-        Label translation where the data_id specified is invalid.
-        :return:
-        """
-
-    def test_translateInvalidOrUnknownLabel(self):
-        """
-
-        :return:
-        """
-
 
 def suite():
     test_classes = [

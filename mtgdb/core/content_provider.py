@@ -38,8 +38,8 @@ class ContentAvailability(object):
         :param sets: the original dictionary that needs to be populated with extra information
         :param data: data_id's for the type of data to add to the set dictionary
         """
-        for content_provider_t in self.content_providers:
-            content_provider = content_provider_t()
+        for t_content_provider in self.content_providers:
+            content_provider = t_content_provider()
             content_provider.populate(sets, data)
 
 
@@ -277,8 +277,9 @@ class MtgjsonContent(object):
                     set.get(SET_LABELS.GATHERER_CODE) is None:
 
                 # If GATHERER_CODE is not set, the code is identical to CODE
-                if allsets_json[code].get(self._translation_table[SET_LABELS.GATHERER_CODE]) is not None:
-                    set[SET_LABELS.GATHERER_CODE] = allsets_json[code][self._translation_table[SET_LABELS.GATHERER_CODE]]
+                translated_label = self._translation_table[SET_LABELS.GATHERER_CODE]
+                if allsets_json[code].get(translated_label) is not None:
+                    set[SET_LABELS.GATHERER_CODE] = allsets_json[code][translated_label]
                 else:
                     set[SET_LABELS.GATHERER_CODE] = set[SET_LABELS.CODE]
 
@@ -286,8 +287,9 @@ class MtgjsonContent(object):
                     set.get(SET_LABELS.OLD_CODE) is None:
 
                 # Only set if OLD_CODE != GATHERER_CODE OR OLD_CODE != CODE
-                if allsets_json[code].get(self._translation_table[SET_LABELS.OLD_CODE]) is not None:
-                    set[SET_LABELS.OLD_CODE] = allsets_json[code][self._translation_table[SET_LABELS.OLD_CODE]]
+                translated_label = self._translation_table[SET_LABELS.OLD_CODE]
+                if allsets_json[code].get(translated_label) is not None:
+                    set[SET_LABELS.OLD_CODE] = allsets_json[code][translated_label]
                 else:
                     set[SET_LABELS.OLD_CODE] = set[SET_LABELS.CODE]
 
@@ -295,16 +297,18 @@ class MtgjsonContent(object):
                     set.get(SET_LABELS.MCI_CODE) is None:
 
                 # Only set if magicCards.info has this set.
-                if allsets_json[code].get(self._translation_table[SET_LABELS.MCI_CODE]) is not None:
-                    set[SET_LABELS.MCI_CODE] = allsets_json[code][self._translation_table[SET_LABELS.MCI_CODE]]
+                translated_label = self._translation_table[SET_LABELS.MCI_CODE]
+                if allsets_json[code].get(translated_label) is not None:
+                    set[SET_LABELS.MCI_CODE] = allsets_json[code][translated_label]
 
             #
             # Set onlineOnly attribute
             #
             if SET_LABELS.ONLINE_ONLY in data_labels and set.get(SET_LABELS.ONLINE_ONLY) is None:
                 # If it's not set, ONLINE_ONLY = False
-                if allsets_json[code].get(self._translation_table[SET_LABELS.ONLINE_ONLY]) is not None:
-                    set[SET_LABELS.ONLINE_ONLY] = allsets_json[code][self._translation_table[SET_LABELS.ONLINE_ONLY]]
+                translated_label = self._translation_table[SET_LABELS.ONLINE_ONLY]
+                if allsets_json[code].get(translated_label) is not None:
+                    set[SET_LABELS.ONLINE_ONLY] = allsets_json[code][translated_label]
                 else:
                     set[SET_LABELS.ONLINE_ONLY] = False
 
@@ -316,8 +320,9 @@ class MtgjsonContent(object):
                 if self._translation_table.get(data_id) is None:
                     continue
                 # skip data_labels that have already been set
-                if set.get(data_id) is None and allsets_json[code].get(self._translation_table[data_id]) is not None:
-                    set[data_id] = allsets_json[code][self._translation_table[data_id]]
+                translated_label = self._translation_table[data_id]
+                if set.get(data_id) is None and allsets_json[code].get(translated_label) is not None:
+                    set[data_id] = allsets_json[code][translated_label]
 
     #
     # Label translation region
