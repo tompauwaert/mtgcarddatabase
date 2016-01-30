@@ -33,25 +33,24 @@ class MtgjsonContentTest(unittest.TestCase):
 
     # noinspection PyUnresolvedReferences
     def test_shouldReturnListOfAllAvailableSetsFromInternetLast(self):
-        # mock returns zipped test-data json.
-        self.content._get_data_local = mock.MagicMock()
-        self.content._get_data_local.return_value = None
-        self.content._get_data_remote = mock.MagicMock()
-        self.content._get_data_remote.return_value = mtgjson_data.data_file(mtgjson_data.data)
-        self.content._save_data_local = mock.MagicMock()
+        with tests.test_utils.FileMocker() as f_mocker:
+            f_mocker.register_file(self._path, False, "")
 
-        sets = self.content.available_sets(remote=True)
+            with mock.patch('mtgdb.core.content_provider.requests.get') as get:
+                get.return_value.content = mtgjson_data.data_zipped(mtgjson_data.data)
 
-        self.assertListEqual(sets, mtgjson_data.data_sets(),
-                             "test returns incorrect list of available sets.")
-        self.assertTrue(self.content._get_data_local.called,
-                        "test did not check for local data first")
-        self.assertTrue(self.content._get_data_remote.called,
-                        "test did not check remote location for data")
-        self.assertTrue(self.content._save_data_local.called_with_args(
-                        self.content._ID_ALLSETS_X,
-                        json.loads(mtgjson_data.data)),
-                        "test did not try and save remote data locally")
+                sets = self.content.available_sets(remote=True)
+
+                self.assertListEqual(sets, mtgjson_data.data_sets(),
+                                     "test returns incorrect list of available sets.")
+                self.assertTrue(f_mocker[self._path].file_exists_called(),
+                                "test did not check for local data first")
+                self.assertTrue(get.called,
+                                "test did not check remote location for data")
+                self.assertTrue(f_mocker[self._path].get_mock().write.called_with_args(
+                                    self._path,
+                                    json.loads(mtgjson_data.data)),
+                                "test did not try and save remote data locally")
 
     def test_shouldReturnListOfAllAvailableSetsFromLocalStorageFirst(self):
         self.content._get_data_remote = mock.MagicMock()

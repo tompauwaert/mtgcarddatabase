@@ -145,6 +145,7 @@ class FileMocker(object):
             self._mock = mock
             self._exists = exists
             self._read_data = read_data
+            self._exists_called = False
 
         def get_path(self):
             return self._path
@@ -153,7 +154,11 @@ class FileMocker(object):
             return self._mock
 
         def file_exists(self):
+            self._exists_called = True
             return self._exists
+
+        def file_exists_called(self):
+            return self._exists_called
 
 if __name__ == "__main__":
     with FileMocker() as file_mocker:
