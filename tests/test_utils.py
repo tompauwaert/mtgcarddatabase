@@ -7,7 +7,6 @@ import os.path
 
 # Reference to the original open function.
 g__test_utils__original_open = open
-g__test_utils__file_spec = None
 
 class FileMocker(object):
     """
@@ -47,7 +46,7 @@ class FileMocker(object):
         self._patcher_files.stop()
         self._patcher_path_isfile.stop()
 
-    def _open_side_effect(self, file_path):
+    def _open_side_effect(self, file_path, mode=''):
         """
         The side effect called when the mocked open is executed. (When we have
         __entered__). The side effect determines whether the file being opened
@@ -59,7 +58,7 @@ class FileMocker(object):
         if file_path in self._files:
             return self._files[file_path].get_mock()
         else:
-            return self._original_open(file_path)
+            return self._original_open(file_path, mode)
 
     def _isfile_side_effect(self, file_path):
         """
@@ -100,6 +99,30 @@ class FileMocker(object):
         file_handle.read.return_value = read_data
         return file_handle
 
+    def __len__(self):
+        """
+        Returns the number of registered files in the
+        Filemocker.
+        :return:
+        """
+        return len(self._files)
+
+    def __getitem__(self, file_path):
+        """
+        Returns the mocked file container associated
+        with the given file_path
+        :param file_path: key of the mocked file to retrieve.
+        :return: A file container for the mocked file with given
+        file_path. Contains the path, whether the file exists or not
+        and the mock used for the file.
+        """
+        return self._files[file_path]
+
+    def __iter__(self):
+        return self._files.__iter__()
+
+
+
     class File(object):
         """
         A container around a mock file. Keeps information about the
@@ -131,8 +154,6 @@ class FileMocker(object):
 
         def file_exists(self):
             return self._exists
-
-
 
 if __name__ == "__main__":
     with FileMocker() as file_mocker:

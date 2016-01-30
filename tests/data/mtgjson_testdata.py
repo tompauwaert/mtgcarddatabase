@@ -402,7 +402,7 @@ def data_sets(data=data, info=None):
 
 from pprint import pprint
 if __name__ == "__main__":
-    pprint(data_sets([d_id.RELEASE_DATE, d_id.BORDER]))
+    pprint(data_sets(data, [d_id.RELEASE_DATE, d_id.BORDER]))
 
 
 
