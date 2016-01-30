@@ -116,109 +116,109 @@ class MtgjsonContentTest(unittest.TestCase):
 
             # CASE 1
             data_ids = [
-                d_ids.SET_DATA.RELEASE_DATE
+                d_ids.SET_LABELS.RELEASE_DATE
             ]
             sets = self.content.available_sets()
             self.content.populate(sets, data_ids)
             self.assertListEqual(sets, mtgjson_data.data_sets(mtgjson_data.data_extended,
-                                                              [d_ids.SET_DATA.RELEASE_DATE]),
+                                                              [d_ids.SET_LABELS.RELEASE_DATE]),
                                  "case 1: populating set list with release dates not successful")
 
             # CASE 2
             data_ids = [
-                d_ids.SET_DATA.BORDER
+                d_ids.SET_LABELS.BORDER
             ]
             sets = self.content.available_sets()
             self.content.populate(sets, data_ids)
             self.assertListEqual(sets, mtgjson_data.data_sets(mtgjson_data.data_extended,
-                                 [d_ids.SET_DATA.BORDER]),
+                                                              [d_ids.SET_LABELS.BORDER]),
                                  "case 2: populating set list with borders not successful")
 
             # CASE 3
             data_ids = [
-                d_ids.SET_DATA.BLOCK
+                d_ids.SET_LABELS.BLOCK
             ]
             sets = self.content.available_sets()
             self.content.populate(sets, data_ids)
             self.assertListEqual(sets, mtgjson_data.data_sets(mtgjson_data.data_extended,
-                                                              [d_ids.SET_DATA.BLOCK]),
+                                                              [d_ids.SET_LABELS.BLOCK]),
                                  "case 3: populating set list with block not successful")
 
             # CASE 4
             data_ids = [
-                d_ids.SET_DATA.TYPE
+                d_ids.SET_LABELS.TYPE
             ]
             sets = self.content.available_sets()
             self.content.populate(sets, data_ids)
             self.assertListEqual(sets, mtgjson_data.data_sets(mtgjson_data.data_extended,
-                                                              [d_ids.SET_DATA.TYPE]),
+                                                              [d_ids.SET_LABELS.TYPE]),
                                  "case 4: populating set list with set type not successful")
 
             # CASE 5
             data_ids = [
-                d_ids.SET_DATA.BOOSTER
+                d_ids.SET_LABELS.BOOSTER
             ]
             sets = self.content.available_sets()
             self.content.populate(sets, data_ids)
             self.assertListEqual(sets, mtgjson_data.data_sets(mtgjson_data.data_extended,
-                                                              [d_ids.SET_DATA.BOOSTER]),
+                                                              [d_ids.SET_LABELS.BOOSTER]),
                                  "case 5: populating set list with boosters not successful")
 
             # CASE 6
             data_ids = [
-                d_ids.SET_DATA.OLD_CODE
+                d_ids.SET_LABELS.OLD_CODE
             ]
             sets = self.content.available_sets()
             self.content.populate(sets, data_ids)
             self.assertListEqual(sets, mtgjson_data.data_sets(mtgjson_data.data_extended,
-                                                              [d_ids.SET_DATA.OLD_CODE]),
+                                                              [d_ids.SET_LABELS.OLD_CODE]),
                                  "case 6: populating set list with old_code not successful")
 
             # CASE 7
             data_ids = [
-                d_ids.SET_DATA.MCI_CODE
+                d_ids.SET_LABELS.MCI_CODE
             ]
             sets = self.content.available_sets()
             self.content.populate(sets, data_ids)
             self.assertListEqual(sets, mtgjson_data.data_sets(mtgjson_data.data_extended,
-                                                              [d_ids.SET_DATA.MCI_CODE]),
+                                                              [d_ids.SET_LABELS.MCI_CODE]),
                                  "case 7: populating set list with mci_code not successful")
 
             # CASE 8
             data_ids = [
-                d_ids.SET_DATA.GATHERER_CODE
+                d_ids.SET_LABELS.GATHERER_CODE
             ]
             sets = self.content.available_sets()
             self.content.populate(sets, data_ids)
             self.assertListEqual(sets, mtgjson_data.data_sets(mtgjson_data.data_extended,
-                                                              [d_ids.SET_DATA.GATHERER_CODE]),
+                                                              [d_ids.SET_LABELS.GATHERER_CODE]),
                                  "case 8: populating set list with gatherer_code not successful")
 
             # CASE 9
             data_ids = [
-                d_ids.SET_DATA.ONLINE_ONLY
+                d_ids.SET_LABELS.ONLINE_ONLY
             ]
             sets = self.content.available_sets()
             self.content.populate(sets, data_ids)
             self.assertListEqual(sets, mtgjson_data.data_sets(mtgjson_data.data_extended,
-                                                              [d_ids.SET_DATA.ONLINE_ONLY]),
+                                                              [d_ids.SET_LABELS.ONLINE_ONLY]),
                                  "case 9: populating set list with online_only not successful")
 
             # CASE 10
             data_ids = [
-                d_ids.SET_DATA.BLOCK,
-                d_ids.SET_DATA.TYPE,
-                d_ids.SET_DATA.RELEASE_DATE,
-                d_ids.SET_DATA.GATHERER_CODE
+                d_ids.SET_LABELS.BLOCK,
+                d_ids.SET_LABELS.TYPE,
+                d_ids.SET_LABELS.RELEASE_DATE,
+                d_ids.SET_LABELS.GATHERER_CODE
             ]
             sets = self.content.available_sets()
             self.content.populate(sets, data_ids)
             self.assertListEqual(sets, mtgjson_data.data_sets(mtgjson_data.data_extended,
                                                               [
-                                                                  d_ids.SET_DATA.BLOCK,
-                                                                  d_ids.SET_DATA.TYPE,
-                                                                  d_ids.SET_DATA.RELEASE_DATE,
-                                                                  d_ids.SET_DATA.GATHERER_CODE
+                                                                  d_ids.SET_LABELS.BLOCK,
+                                                                  d_ids.SET_LABELS.TYPE,
+                                                                  d_ids.SET_LABELS.RELEASE_DATE,
+                                                                  d_ids.SET_LABELS.GATHERER_CODE
                                                               ]),
                                  "case 10: populating set list with multiple fields not successful")
 
@@ -238,13 +238,13 @@ class MtgjsonContentTest(unittest.TestCase):
 
             # CASE 2
             data_ids = [
-                d_ids.SET_DATA.RELEASE_DATE,
+                d_ids.SET_LABELS.RELEASE_DATE,
                 'does_not_exist',
             ]
             sets = self.content.available_sets()
             self.content.populate(sets, data_ids)
             self.assertListEqual(sets, mtgjson_data.data_sets(mtgjson_data.data_extended,
-                                                              [d_ids.SET_DATA.RELEASE_DATE]),
+                                                              [d_ids.SET_LABELS.RELEASE_DATE]),
                                  "case 2: does not correctly handle non-available labels")
 
     def test_populatingWhenTheRequestedDataIsAlreadyAvailableDoesNothing(self):
@@ -254,25 +254,25 @@ class MtgjsonContentTest(unittest.TestCase):
 
             # CASE 1
             data_ids = [
-                d_ids.SET_DATA.RELEASE_DATE,
+                d_ids.SET_LABELS.RELEASE_DATE,
             ]
             sets = mtgjson_data.data_sets(mtgjson_data.data_extended, data_ids) #already contains 'release date'
             self.content.populate(sets, data_ids)
             self.assertListEqual(sets, mtgjson_data.data_sets(mtgjson_data.data_extended,
-                                                              d_ids.SET_DATA.RELEASE_DATE),
+                                                              d_ids.SET_LABELS.RELEASE_DATE),
                                  "case 1: wrong population behavior when is data already present")
 
             # CASE 2
             data_ids = [
-                d_ids.SET_DATA.RELEASE_DATE,
-                d_ids.SET_DATA.BORDER,
+                d_ids.SET_LABELS.RELEASE_DATE,
+                d_ids.SET_LABELS.BORDER,
             ]
             sets = mtgjson_data.data_sets(mtgjson_data.data_extended, data_ids) #already contains 'release date'
             self.content.populate(sets, data_ids)
             self.assertListEqual(sets, mtgjson_data.data_sets(mtgjson_data.data_extended,
                                                               [
-                                                                  d_ids.SET_DATA.RELEASE_DATE,
-                                                                  d_ids.SET_DATA.BORDER,
+                                                                  d_ids.SET_LABELS.RELEASE_DATE,
+                                                                  d_ids.SET_LABELS.BORDER,
                                                               ]),
                                  "case 2: wrong population behavior when is data already present")
 
@@ -283,49 +283,69 @@ class MtgjsonContentTest(unittest.TestCase):
 
             # CASE 1
             data_ids = [
-                d_ids.SET_DATA.RELEASE_DATE,
+                d_ids.SET_LABELS.RELEASE_DATE,
             ]
             sets = self.content.available_sets()
             self.content.populate(sets, data_ids)
             self.content.populate(sets, data_ids)
             self.assertListEqual(sets, mtgjson_data.data_sets(mtgjson_data.data_extended, [
-                d_ids.SET_DATA.RELEASE_DATE,
+                d_ids.SET_LABELS.RELEASE_DATE,
             ]),
                                  "case 1: populate is not idempotent")
 
             # CASE 2
             data_ids = [
-                d_ids.SET_DATA.RELEASE_DATE,
-                d_ids.SET_DATA.BLOCK,
-                d_ids.SET_DATA.TYPE,
+                d_ids.SET_LABELS.RELEASE_DATE,
+                d_ids.SET_LABELS.BLOCK,
+                d_ids.SET_LABELS.TYPE,
             ]
             sets = self.content.available_sets()
             self.content.populate(sets, data_ids)
             self.content.populate(sets, data_ids)
             self.assertListEqual(sets, mtgjson_data.data_sets(mtgjson_data.data_extended, [
-                d_ids.SET_DATA.RELEASE_DATE,
-                d_ids.SET_DATA.BLOCK,
-                d_ids.SET_DATA.TYPE,
+                d_ids.SET_LABELS.RELEASE_DATE,
+                d_ids.SET_LABELS.BLOCK,
+                d_ids.SET_LABELS.TYPE,
             ]),
                                  "case 2: populate is not idempotent")
 
             # CASE 3
             data_ids = [
-                d_ids.SET_DATA.RELEASE_DATE,
-                d_ids.SET_DATA.BLOCK,
-                d_ids.SET_DATA.TYPE,
+                d_ids.SET_LABELS.RELEASE_DATE,
+                d_ids.SET_LABELS.BLOCK,
+                d_ids.SET_LABELS.TYPE,
                 'non_existant',
             ]
             sets = self.content.available_sets()
             self.content.populate(sets, data_ids)
             self.content.populate(sets, data_ids)
             self.assertListEqual(sets, mtgjson_data.data_sets(mtgjson_data.data_extended, [
-                d_ids.SET_DATA.RELEASE_DATE,
-                d_ids.SET_DATA.BLOCK,
-                d_ids.SET_DATA.TYPE,
+                d_ids.SET_LABELS.RELEASE_DATE,
+                d_ids.SET_LABELS.BLOCK,
+                d_ids.SET_LABELS.TYPE,
             ]),
                                  "case 3: populate is not idempotent when introducing " +
                                  "non-existant d_id")
+
+    def test_translateValidLabels(self):
+        """
+        Translation of valid labels with valid data_ids
+        :return:
+        """
+        allsets_id = self.content._ID_ALLSETS_X
+
+    def test_translateInvalidDataId(self):
+        """
+        Label translation where the data_id specified is invalid.
+        :return:
+        """
+
+    def test_translateInvalidOrUnknownLabel(self):
+        """
+
+        :return:
+        """
+
 
 def suite():
     test_classes = [

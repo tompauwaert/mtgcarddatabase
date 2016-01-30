@@ -3,7 +3,7 @@ import mock
 
 import mtgdb.core.data_view
 import tests.data.mtgjson_testdata as mtgjson_data
-from mtgdb.core.data_id import SET_DATA as s_id
+from mtgdb.core.data_id import SET_LABELS as s_id
 
 class DataViewTest(unittest.TestCase):
 

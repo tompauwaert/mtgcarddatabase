@@ -9,6 +9,13 @@ class InvalidDataError(Exception):
 
 class DataUnavailable(Exception):
     """
-    Exception to be used when the requested data is unavailabe.
+    Exception to be used when the requested data is unavailable.
+    """
+    pass
+
+
+class IllegalArgumentException(ValueError):
+    """
+    Exception to be used when an invalid argument has been passed.
     """
     pass

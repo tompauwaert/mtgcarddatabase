@@ -6,7 +6,7 @@ own specific identifiers for that type of data, if is available for their
 content.
 """
 
-class SET_DATA(object):
+class SET_LABELS(object):
 
     # code -> label
     CODE = 'set_code'

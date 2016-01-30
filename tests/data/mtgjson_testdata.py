@@ -308,7 +308,7 @@ _SETS_CONTENT_NAME = 'Allsets-x.json.zip'
 import StringIO, io
 import zipfile
 import json
-from mtgdb.core.data_id import SET_DATA as d_id
+from mtgdb.core.data_id import SET_LABELS as d_id
 
 def data_zipped(data=data):
     zip_buffer = io.BytesIO()
