@@ -76,6 +76,9 @@ class MtgjsonContent(object):
 
     def __init__(self):
         self._data = {}
+        self._next_call_remote = {
+            self._ID_ALLSETS_X: False,
+        }
 
     def _url_location(self, data_file_id):
         """
@@ -159,7 +162,7 @@ class MtgjsonContent(object):
         """
         data_path = self._data_location(data_file_id)
         with open(data_path, 'w') as output_json:
-            json.dump(data_path, output_json, indent=4)
+            json.dump(self._data[data_file_id], output_json, indent=4)
 
     def _get_data(self, data_file_id, get_remote=False):
         """
@@ -176,6 +179,12 @@ class MtgjsonContent(object):
         """
         if self._data.get(data_file_id, None) is not None:
             return self._data[data_file_id]
+
+        # If for some reason the next call should always be allowed
+        # remote access, then it is forced here. This might be the
+        # case after a cache clear for example.
+        if self._next_call_remote:
+            get_remote = True
 
         allsets_file = self._get_data_local(data_file_id)
 
@@ -216,6 +225,23 @@ class MtgjsonContent(object):
                 allsets_file.close()
 
         return self._data[data_file_id]
+
+    def clear_cache(self):
+        """
+        Clears the cache of the MtgJsonContentProvider. The data will
+        have to be downloaded again.
+        NOTE: this forces the next call to data to be forced to go remote.
+        NOTE_2: TODO: The requirement to go remote should be remembered between
+        closing and starting the application.
+        """
+        self._data = {}
+        # Force remote for each subsequent call to a new data_item.
+        for data_key in self._next_call_remote:
+            self._next_call_remote[data_key] = True
+
+        # remove files.
+        file_path = self._data_location(self._ID_ALLSETS_X)
+        os.remove(file_path)
 
     def available_sets(self, remote=False):
         """

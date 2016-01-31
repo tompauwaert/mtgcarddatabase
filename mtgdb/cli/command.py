@@ -4,6 +4,7 @@ from tabulate import tabulate
 
 
 import core.data_view
+import core.database
 from core.data_labels import SET_LABELS
 
 class Application(cmd2.Cmd):
@@ -15,6 +16,10 @@ class Application(cmd2.Cmd):
         cmd2.Cmd.__init__(self, stdin=input, stdout=output)
         self._debug = debug
         self.prompt = 'mtgdb> '
+
+    #
+    # LISTING
+    #
 
     def do_list(self, arg):
         """
@@ -46,6 +51,23 @@ class Application(cmd2.Cmd):
         # data preprocessed for tabulating
         print(tabulate(available_sets, headers='keys', tablefmt='orgtbl'))
 
+    #
+    # DATA
+    #
+
+    def do_data(self, arg):
+        """
+        Allows you to run data maintenance operations.
+
+        Mandatory arguments (1 argument required):
+        - clear-cache: Clears the local cache of the data. Subsequent calls for data
+            will require a remote fetching of the data.
+        """
+        if arg is None or arg == '':
+            return False
+        elif arg == 'clear-cache':
+            database = core.database.Database()
+            database.clear_cache()
 
 
 

@@ -31,7 +31,6 @@ class MtgjsonContentTest(unittest.TestCase):
         self._path = "data" + os.sep + "allsets.json"
         self._url = "http://mtgjson.com/json/AllSets-x.json.zip"
 
-    # noinspection PyUnresolvedReferences
     def test_shouldReturnListOfAllAvailableSetsFromInternetLast(self):
         with tests.test_utils.FileMocker() as f_mocker:
             f_mocker.register_file(self._path, False, "")
