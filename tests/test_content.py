@@ -51,6 +51,21 @@ class MtgjsonContentTest(unittest.TestCase):
                                     json.loads(mtgjson_data.data)),
                                 "test did not try and save remote data locally")
 
+    def test_shouldFailToReturnListFromInternetIfRemoteIsFalse(self):
+        with tests.test_utils.FileMocker() as f_mocker:
+            f_mocker.register_file(self._path, False, "")
+
+            with mock.patch('mtgdb.core.content_provider.requests.get') as get:
+                get.return_value.content = mtgjson_data.data_zipped(mtgjson_data.data)
+                args = ()
+                kwargs = {"remote": False}
+
+                self.assertFalse(get.called)
+                self.assertRaises(mtgdb.exceptions.DataUnavailable,
+                                  self.content.available_sets,
+                                  *args,
+                                  **kwargs)
+
     def test_shouldReturnListOfAllAvailableSetsFromLocalStorageFirst(self):
         self.content._get_data_remote = mock.MagicMock()
         self.content._save_data_local = mock.MagicMock()

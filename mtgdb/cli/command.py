@@ -1,5 +1,7 @@
 import sys
 import cmd2
+from cmd2 import options
+from cmd2 import make_option
 from tabulate import tabulate
 
 
@@ -21,7 +23,9 @@ class Application(cmd2.Cmd):
     # LISTING
     #
 
-    def do_list(self, arg):
+    @options([make_option('-r', '--remote', action="store_true",
+                          help="allow remote fetching of data")])
+    def do_list(self, arg, opts=None):
         """
         List a number of mtg sets. Use a parameter to specify
         which sets to list. Defaults to all available sets.
@@ -29,18 +33,24 @@ class Application(cmd2.Cmd):
         Parameters:
         - available: list all sets that are currently available for download
 
+
+        - second parameter may be given as remote
         """
-        if arg is None:
-            self._list_available()
+        remote = False
+        if opts.remote:
+            remote = True
+
+        if arg == '':
+            self._list_available(remote=remote)
         elif arg == "available":
-            self._list_available()
+            self._list_available(remote=remote)
 
         return False
 
 
-    def _list_available(self):
+    def _list_available(self, remote=False):
         data_view = core.data_view.DataView()
-        available_sets = data_view.available_sets()
+        available_sets = data_view.available_sets(remote=remote)
 
         # sort based on release date, descending.
         def get_set_release_date(item):
@@ -65,7 +75,8 @@ class Application(cmd2.Cmd):
         """
         if arg is None or arg == '':
             return False
-        elif arg == 'clear-cache':
+
+        if arg == 'clear-cache':
             database = core.database.Database()
             database.clear_cache()
 

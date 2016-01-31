@@ -22,25 +22,29 @@ class ContentAvailability(object):
             MtgjsonContent,
         ]
 
-    def available_sets(self):
+    def available_sets(self, remote=False):
         """
         Return a list of all the available official sets of mtg.
+        :param remote: Allows the next call for data to go fetch the data remotely, if
+        required.
         :return: A list of all the available sets with some extra information about
             each element.
         """
-        sets = self.official_content.available_sets()
+        sets = self.official_content.available_sets(remote=remote)
         return sets
 
-    def populate(self, sets, data):
+    def populate(self, sets, data, remote=False):
         """
         Add additional information to the set dictionary. The data array specifies which
         information to add.
         :param sets: the original dictionary that needs to be populated with extra information
         :param data: data_id's for the type of data to add to the set dictionary
+        :param remote: Allows the next call for data to go fetch the data remotely,
+        if required.
         """
         for t_content_provider in self.content_providers:
             content_provider = t_content_provider()
-            content_provider.populate(sets, data)
+            content_provider.populate(sets, data, remote=remote)
 
 
 class MtgjsonContent(object):
@@ -164,12 +168,12 @@ class MtgjsonContent(object):
         with open(data_path, 'w') as output_json:
             json.dump(self._data[data_file_id], output_json, indent=4)
 
-    def _get_data(self, data_file_id, get_remote=False):
+    def _get_data(self, data_file_id, remote=False):
         """
         Get the data with given data_file_id. This data might be opened from local
         stores or from the internet.
         :param data_file_id: identifier for the data, determines the data that is requested.
-        :param get_remote: specifies whether the data may be retrieved remotely if it
+        :param remote: specifies whether the data may be retrieved remotely if it
         is not available locally. Preference will always be given to the locally cached data
         if available. If the data is not available locally and get_remote is false, a
         DataUnavailable exception will be raised.
@@ -183,14 +187,14 @@ class MtgjsonContent(object):
         # If for some reason the next call should always be allowed
         # remote access, then it is forced here. This might be the
         # case after a cache clear for example.
-        if self._next_call_remote:
-            get_remote = True
+        if self._next_call_remote[data_file_id]:
+            remote = True
 
         allsets_file = self._get_data_local(data_file_id)
 
         if allsets_file is not None:
             allsets_available_locally = True
-        elif not get_remote:
+        elif not remote:
             raise mtgdb.exceptions.DataUnavailable(
                 "Requested data [{}] unavailable locally. ".format(self._data_location(data_file_id)) +
                 "Need permission to fetch remotely")
