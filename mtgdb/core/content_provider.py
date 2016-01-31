@@ -71,6 +71,7 @@ class MtgjsonContent(object):
         SET_LABELS.BLOCK: 'block',
         SET_LABELS.NAME: 'name',
         SET_LABELS.CARDS: 'cards',
+        SET_LABELS.NR_CARDS: None,
         SET_LABELS.TYPE: 'type',
 
         # special
@@ -83,6 +84,7 @@ class MtgjsonContent(object):
         self._next_call_remote = {
             self._ID_ALLSETS_X: False,
         }
+        self._label_translation_table = None
 
     def _url_location(self, data_file_id):
         """
@@ -297,62 +299,104 @@ class MtgjsonContent(object):
             # No data needs to be added.
             return sets
 
-        for set in sets:
-            code = set[SET_LABELS.CODE]
+        for mtgset in sets:
+            code = mtgset[SET_LABELS.CODE]
 
-            #
-            # Populate code information
-            #
-            if SET_LABELS.GATHERER_CODE in data_labels and \
-                    set.get(SET_LABELS.GATHERER_CODE) is None:
+            self._populate_code_information(allsets_json, code, data_labels, mtgset)
+            self._populate_online_info(allsets_json, code, data_labels, mtgset)
 
-                # If GATHERER_CODE is not set, the code is identical to CODE
-                translated_label = self._translation_table[SET_LABELS.GATHERER_CODE]
-                if allsets_json[code].get(translated_label) is not None:
-                    set[SET_LABELS.GATHERER_CODE] = allsets_json[code][translated_label]
-                else:
-                    set[SET_LABELS.GATHERER_CODE] = set[SET_LABELS.CODE]
-
-            if SET_LABELS.OLD_CODE in data_labels and \
-                    set.get(SET_LABELS.OLD_CODE) is None:
-
-                # Only set if OLD_CODE != GATHERER_CODE OR OLD_CODE != CODE
-                translated_label = self._translation_table[SET_LABELS.OLD_CODE]
-                if allsets_json[code].get(translated_label) is not None:
-                    set[SET_LABELS.OLD_CODE] = allsets_json[code][translated_label]
-                else:
-                    set[SET_LABELS.OLD_CODE] = set[SET_LABELS.CODE]
-
-            if SET_LABELS.MCI_CODE in data_labels and \
-                    set.get(SET_LABELS.MCI_CODE) is None:
-
-                # Only set if magicCards.info has this set.
-                translated_label = self._translation_table[SET_LABELS.MCI_CODE]
-                if allsets_json[code].get(translated_label) is not None:
-                    set[SET_LABELS.MCI_CODE] = allsets_json[code][translated_label]
-
-            #
-            # Set onlineOnly attribute
-            #
-            if SET_LABELS.ONLINE_ONLY in data_labels and set.get(SET_LABELS.ONLINE_ONLY) is None:
-                # If it's not set, ONLINE_ONLY = False
-                translated_label = self._translation_table[SET_LABELS.ONLINE_ONLY]
-                if allsets_json[code].get(translated_label) is not None:
-                    set[SET_LABELS.ONLINE_ONLY] = allsets_json[code][translated_label]
-                else:
-                    set[SET_LABELS.ONLINE_ONLY] = False
+            if SET_LABELS.NR_CARDS in data_labels:
+                self._populate_nr_cards(allsets_json, code, mtgset)
 
             #
             # Copy over values of all the other attributes
             #
-            for data_id in data_labels:
+            for set_label in data_labels:
                 # skip data_labels not supported by mtgjson content provider
-                if self._translation_table.get(data_id) is None:
+                translated_label = self._translate_label(self._ID_ALLSETS_X, set_label)
+                if translated_label is None:
                     continue
                 # skip data_labels that have already been set
-                translated_label = self._translation_table[data_id]
-                if set.get(data_id) is None and allsets_json[code].get(translated_label) is not None:
-                    set[data_id] = allsets_json[code][translated_label]
+                if mtgset.get(set_label) is None and allsets_json[code].get(translated_label) is not None:
+                    mtgset[set_label] = allsets_json[code][translated_label]
+
+    def _populate_nr_cards(self, allsets_json, code, mtgset):
+        """
+        Populate the mtgset with the nr of cards in the set.
+        :param allsets_json: contains all the known information about all the sets
+        :param code: code of the set under inspection
+        :param mtgset: the set currently being populated
+        """
+
+        cards_label = self._translate_label(self._ID_ALLSETS_X, SET_LABELS.CARDS)
+        if allsets_json[code].get(cards_label, None) is None:
+            mtgset[SET_LABELS.NR_CARDS] = 0
+        else:
+            cards = allsets_json[code][cards_label]
+            mtgset[SET_LABELS.NR_CARDS] = len(cards)
+
+    def _populate_online_info(self, allsets_json, code, data_labels, mtgset):
+        """
+        Populate the information of whether a card is only online or not. This information
+        is not always set in the allsets_json data, and therefore might need to be set
+        according if it's not set yet.
+        :param allsets_json: contains all the sets information that is available officially
+        :param code: code of the set under inspection
+        :param data_labels: labels of the information to populate
+        :param mtgset: the set under inspection that gets populated.
+        """
+        #
+        # Set onlineOnly attribute
+        #
+        if SET_LABELS.ONLINE_ONLY in data_labels and mtgset.get(SET_LABELS.ONLINE_ONLY) is None:
+            # If it's not set, ONLINE_ONLY = False
+            translated_label = self._translate_label(self._ID_ALLSETS_X, SET_LABELS.ONLINE_ONLY)
+            if allsets_json[code].get(translated_label) is not None:
+                mtgset[SET_LABELS.ONLINE_ONLY] = allsets_json[code][translated_label]
+            else:
+                mtgset[SET_LABELS.ONLINE_ONLY] = False
+
+    def _populate_code_information(self, allsets_json, code, data_labels, mtgset):
+        """
+        Populate the set code information. Some codes might not have been set in the official
+        data in which case the code values follow certain rules. This method follows those
+        rules and sets code information for set codes that are not set in the official data.
+
+        :param allsets_json: contains all the sets information that is available officially
+        :param code: code of the set under inspection
+        :param data_labels: labels of the information to populate
+        :param mtgset: the set under inspection that gets populated.
+        """
+        #
+        # Populate code information
+        #
+        if SET_LABELS.GATHERER_CODE in data_labels and \
+                mtgset.get(SET_LABELS.GATHERER_CODE) is None:
+
+            # If GATHERER_CODE is not set, the code is identical to CODE
+            translated_label = self._translate_label(self._ID_ALLSETS_X, SET_LABELS.GATHERER_CODE)
+            if allsets_json[code].get(translated_label) is not None:
+                mtgset[SET_LABELS.GATHERER_CODE] = allsets_json[code][translated_label]
+            else:
+                mtgset[SET_LABELS.GATHERER_CODE] = mtgset[SET_LABELS.CODE]
+
+        if SET_LABELS.OLD_CODE in data_labels and \
+                mtgset.get(SET_LABELS.OLD_CODE) is None:
+
+            # Only set if OLD_CODE != GATHERER_CODE OR OLD_CODE != CODE
+            translated_label = self._translate_label(self._ID_ALLSETS_X, SET_LABELS.OLD_CODE)
+            if allsets_json[code].get(translated_label) is not None:
+                mtgset[SET_LABELS.OLD_CODE] = allsets_json[code][translated_label]
+            else:
+                mtgset[SET_LABELS.OLD_CODE] = mtgset[SET_LABELS.CODE]
+
+        if SET_LABELS.MCI_CODE in data_labels and \
+                mtgset.get(SET_LABELS.MCI_CODE) is None:
+
+            # Only set if magicCards.info has this set.
+            translated_label = self._translate_label(self._ID_ALLSETS_X, SET_LABELS.MCI_CODE)
+            if allsets_json[code].get(translated_label) is not None:
+                mtgset[SET_LABELS.MCI_CODE] = allsets_json[code][translated_label]
 
     #
     # Label translation region
@@ -386,7 +430,6 @@ class MtgjsonContent(object):
         must have an existing counterpart in the translation table for these labels.
         :return: The label for the data in the ALLSETS_X data.
         """
-        assert set_label in self._translation_table, \
-            "unknown set_label specified for translation to allsets_x_label"
-
+        if set_label not in self._translation_table:
+            return None
         return self._translation_table[set_label]

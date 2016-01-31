@@ -23,6 +23,7 @@ class SET_LABELS(object):
     BLOCK = 'set_block_name'
     NAME = 'set_name'
     CARDS = 'cards'
+    NR_CARDS = 'nr of cards'
     TYPE = 'type'
 
     # special -> label
