@@ -7,12 +7,12 @@ import os
 import os.path
 
 import mtgdb.exceptions
-from mtgdb.core.data_id import SET_LABELS
+from mtgdb.core.data_labels import SET_LABELS
 
 
 class ContentAvailability(object):
     """ Class that knows which content is available 'officially', and can give a differentiating
-    view between official availability and local availability, as well as what content can be
+    view between official _availability and local _availability, as well as what content can be
     provided by the different content providers.
     """
 

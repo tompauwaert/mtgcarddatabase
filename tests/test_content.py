@@ -8,7 +8,7 @@ import mtgdb.core.content_provider
 import mtgdb.exceptions
 import tests.data.mtgjson_testdata as mtgjson_data
 import tests.test_utils
-import mtgdb.core.data_id as d_ids
+import mtgdb.core.data_labels as d_ids
 
 
 class ContentAvailabilityTest(unittest.TestCase):
