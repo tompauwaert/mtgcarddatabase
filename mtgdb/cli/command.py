@@ -7,6 +7,7 @@ from tabulate import tabulate
 
 import core.data_view
 import core.database
+import data
 from core.data_labels import SET_LABELS
 
 class Application(cmd2.Cmd):
@@ -67,20 +68,27 @@ class Application(cmd2.Cmd):
 
     def do_data(self, arg):
         """
-        Allows you to run data maintenance operations.
+        Enters data maintenance mode. You can use this to clear your cache,
+        or if you are in debug mode this allows you to inspect the data.
 
-        Mandatory arguments (1 argument required):
-        - clear-cache: Clears the local cache of the data. Subsequent calls for data
-            will require a remote fetching of the data.
+        In order to clear the cache following parameter:
+        -clear-cache
+
+        If you wish to enter inspection mode use following parameter:
+        -inspect
+
         """
-        if arg is None or arg == '':
-            return False
 
-        if arg == 'clear-cache':
+        if arg == "-clear-cache":
             database = core.database.Database()
             database.clear_cache()
 
-
+        elif arg == "-inspect":
+            if self._debug:
+                data_cmd = data.DataInspection()
+                data_cmd.cmdloop()
+            else:
+                print "You must be in debug mode to run data inspection."
 
 
 

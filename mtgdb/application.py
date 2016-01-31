@@ -16,5 +16,8 @@ if __name__ == "__main__":
         if arg == '--debug':
             debug = True
 
+    if debug:
+        sys.argv.remove('--debug')
+
     app = cli.command.Application(debug)
     app.cmdloop()
